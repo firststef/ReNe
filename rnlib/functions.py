@@ -1,9 +1,17 @@
 def get_matrix_mul(matrix_1, matrix_2):
-    matrix_3 = [[0 for y in range(len(matrix_2[0]))] for y in range(len(matrix_1))]
+    is_mat_2_lst = isinstance(matrix_2[0], list)
+    len_lst = len(matrix_2[0]) if is_mat_2_lst else 1
+    if is_mat_2_lst:
+        matrix_3 = [[0 for y in range(len_lst)] for y in range(len(matrix_1))]
+    else:
+        matrix_3 = [0 for y in range(len(matrix_1))]
     for i in range(len(matrix_1)):
-        for j in range(len(matrix_2[0])):
+        for j in range(len_lst):
             for k in range(len(matrix_2)):
-                matrix_3[i][j] += matrix_1[i][k] * matrix_2[k][j]
+                if is_mat_2_lst:
+                    matrix_3[i][j] += matrix_1[i][k] * matrix_2[k][j]
+                else:
+                    matrix_3[i] += matrix_1[i][k] * matrix_2[k]
     return matrix_3
 
 

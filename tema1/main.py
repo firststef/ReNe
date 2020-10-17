@@ -1,43 +1,30 @@
-import expression
-import rnlib
-import unittest
+import rnlib.expression as ex
+import rnlib.functions as fn
 import re
+import unittest
+import numpy as np
+import numpy.testing as nt
 
 
-def get_ec_matrix_from_file(name: str):
-    matrix = [[] for y in range(3)]
-    with open(name) as f:
-        lines = f.readlines()
-        for ln in range(3):
-            line = lines[ln]
+class CompareOwnAndNumpy(unittest.TestCase):
+    def test_compare(self):
+        mat, res = ex.get_ec_matrix_from_file("expr.txt")
+        self.assertEqual(
+            [[12, 1, -7],
+             [9, 0, 3],
+             [5, 4, 8]],
+            mat
+        )
+        solution_py = fn.get_matrix_mul(fn.get_matrix_inverse(mat), res)
 
-            x = expression.Variable("x")
-            y = expression.Variable("y")
-            z = expression.Variable("z")
+        solution_numpy_instant = np.linalg.solve(mat, res)
+        solution_numpy_manual = np.dot(np.linalg.inv(mat), res)
 
-            expr = eval(re.sub(r"([0-9]+)([a-z]|[A-Z])+", r"\1*\2", line).replace("=", "-(") + ")")
-
-            matrix[ln] = [expr.get_var(x).factor, expr.get_var(y).factor, expr.get_var(z).factor]
-    return matrix
-
-
-class TestGetSolution(unittest.TestCase):
-    def test_parse_line(self):
-        x = expression.Variable("x")
-        y = expression.Variable("y")
-        z = expression.Variable("z")
-
-        expr = eval("2*x - 3*y + 4*z - 4")
-        self.assertEqual(expr.get_var("x").factor, 2)
-        self.assertEqual(expr.get_var("y").factor, -3)
-        self.assertEqual(expr.get_var("z").factor, 4)
-
-    def test_parse_file(self):
-        self.assertEqual(get_ec_matrix_from_file("file.txt"), [
-            [1, 2, 1],
-            [1, 0, 3],
-            [2, -3, 0]
-        ])
+        try:
+            nt.assert_array_almost_equal(solution_py, solution_numpy_instant)
+            nt.assert_array_almost_equal(solution_py, solution_numpy_manual)
+        except Exception:
+            self.fail("The two matrices are not almost equal")
 
 
 if __name__ == "__main__":

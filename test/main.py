@@ -1,4 +1,5 @@
 import rnlib.functions as lf
+import rnlib.expression as ex
 import unittest
 import numpy.testing as nt
 
@@ -40,6 +41,30 @@ class TestMatrices(unittest.TestCase):
             ], decimal=3)
         except Exception as e:
             self.fail("Not the same")
+
+
+class TestExpression(unittest.TestCase):
+    def test_parse_line(self):
+        x = ex.Variable("x")
+        y = ex.Variable("y")
+        z = ex.Variable("z")
+
+        expr = eval("2*x - 3*y + 4*z - 4")
+        self.assertEqual(expr.get_var("x").factor, 2)
+        self.assertEqual(expr.get_var("y").factor, -3)
+        self.assertEqual(expr.get_var("z").factor, 4)
+
+    def test_parse_file(self):
+        self.assertEqual(ex.get_ec_matrix_from_file("expr_test.txt"),
+            (
+                [[1, 2, 1],
+                [1, 0, 3],
+                [2, -3, 0]],
+                [7,
+                 11,
+                 1]
+             )
+        )
 
 
 if __name__ == "__main__":

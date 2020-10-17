@@ -40,7 +40,7 @@ def numpy_3():
 
 
 if __name__ == "__main__":
-    rnlib.get_matrix_mul(matrix, array, base)
+    rnlib.get_matrix_mul(matrix, array)
     numpy_1()
     numpy_2()
     numpy_3()

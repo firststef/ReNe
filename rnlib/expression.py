@@ -1,4 +1,5 @@
 from itertools import chain
+import re
 
 
 class Variable:
@@ -88,6 +89,9 @@ class Expression:
         else:
             return Variable(name, 0)
 
+    def get_constant(self):
+        return self._internal.constant
+
     def __add__(self, other):
         # print("ex add " + other)
         return Expression(other, self)
@@ -116,3 +120,22 @@ class Expression:
 
     def __neg__(self):
         return -1 * self
+
+
+def get_ec_matrix_from_file(name: str, dimension: int = 3) -> (list, list):
+    matrix = [[] for y in range(dimension)]
+    result = [0 for y in range(dimension)]
+    with open(name) as f:
+        lines = f.readlines()
+        for ln in range(dimension):
+            line = lines[ln]
+
+            x = Variable("x")
+            y = Variable("y")
+            z = Variable("z")
+
+            expr = eval(re.sub(r"([0-9]+)([a-z]|[A-Z])+", r"\1*\2", line).replace("=", "-(") + ")")
+
+            matrix[ln] = [expr.get_var(x).factor, expr.get_var(y).factor, expr.get_var(z).factor]
+            result[ln] = -1 * expr.get_constant()
+    return matrix, result
