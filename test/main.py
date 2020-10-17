@@ -1,4 +1,4 @@
-import lib.functions as lf
+import rnlib.functions as lf
 import unittest
 import numpy.testing as nt
 

@@ -1,6 +1,6 @@
 import numpy as np
 import unittest
-import lib
+import rnlib
 
 matrix = [
     [1, 2, 3, 4],
@@ -40,7 +40,7 @@ def numpy_3():
 
 
 if __name__ == "__main__":
-    lib.get_matrix_mul(matrix, array, base)
+    rnlib.get_matrix_mul(matrix, array, base)
     numpy_1()
     numpy_2()
     numpy_3()
