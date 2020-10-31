@@ -1,6 +1,5 @@
 import rnlib.expression as ex
 import rnlib.functions as fn
-import re
 import unittest
 import numpy as np
 import numpy.testing as nt
@@ -13,6 +12,25 @@ class CompareOwnAndNumpy(unittest.TestCase):
             [[12, 1, -7],
              [9, 0, 3],
              [5, 4, 8]],
+            mat
+        )
+        solution_py = fn.get_matrix_mul(fn.get_matrix_inverse(mat), res)
+
+        solution_numpy_instant = np.linalg.solve(mat, res)
+        solution_numpy_manual = np.dot(np.linalg.inv(mat), res)
+
+        try:
+            nt.assert_array_almost_equal(solution_py, solution_numpy_instant)
+            nt.assert_array_almost_equal(solution_py, solution_numpy_manual)
+        except Exception:
+            self.fail("The two matrices are not almost equal")
+
+    def test_nou(self):
+        mat, res = ex.get_ec_matrix_from_file("expr2.txt")
+        self.assertEqual(
+            [[10, -2, -8],
+             [-21, 7, 3],
+             [11, 12, -5]],
             mat
         )
         solution_py = fn.get_matrix_mul(fn.get_matrix_inverse(mat), res)
