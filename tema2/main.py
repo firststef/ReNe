@@ -1,12 +1,11 @@
 import gzip
 import pickle
-import rnlib.perceptron as perceptron
+import rnlib.perceptron_net as pn
 
 with gzip.open('mnist.pkl.gz', 'rb') as f:
     train_set, valid_set, test_set = pickle.load(f, encoding='latin')
 
-    zero_set = [(x, 0 if t != 0 else 1) for x, t in zip(train_set[0], train_set[1])]
-    weights, b = perceptron.adeline_perceptron(zero_set, len(train_set[0][0]))
-
-    print(perceptron.compute_result_for_perceptron(weights, b, test_set[0][0]))
-    print(perceptron.compute_result_for_perceptron(weights, b, test_set[0][1]))
+    net = pn.SingleLayerNet([x for x in range(10)])
+    net.train(train_set[0], train_set[1])
+    # net.show()
+    print(net.test_accuracy(test_set[0], test_set[1]))

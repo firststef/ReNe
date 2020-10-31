@@ -1,6 +1,9 @@
 import numpy as np
 
 
+MAX_ITERATIONS = 30
+
+
 def perceptron_activation(ii: int):
     return 1 if ii > 0 else 0
 
@@ -8,7 +11,7 @@ def perceptron_activation(ii: int):
 def perceptron_online_training(training_set, num_of_features):
     weights = np.array([0 for x in range(num_of_features)])
     all_classified = False
-    nr_iterations = 1000000
+    nr_iterations = MAX_ITERATIONS
     b = 0
     miu = 0.01
 
@@ -20,14 +23,14 @@ def perceptron_online_training(training_set, num_of_features):
             weights += (t - output) * x * miu
             b += (t - output) * miu
             if output != t:
-                all_classified = True
+                all_classified = False
         nr_iterations -= 1
     return weights, b
 
 
 def perceptron_batch_training(training_set, num_of_features):
     weights = np.array([0 for x in range(num_of_features)])
-    nr_iterations = 1000000
+    nr_iterations = MAX_ITERATIONS
     b = 0
     miu = 0.01
     batches = len(training_set) // 100
@@ -53,7 +56,7 @@ def perceptron_batch_training(training_set, num_of_features):
 
 def perceptron_mini_batch_training(training_set, num_of_features):
     weights = np.array([0 for x in range(num_of_features)])
-    nr_iterations = 1000000
+    nr_iterations = MAX_ITERATIONS
     b = 0
     miu = 0.01
     batches = len(training_set) // 100
@@ -62,8 +65,7 @@ def perceptron_mini_batch_training(training_set, num_of_features):
         for ba in range(batches):
             alfa = np.array([0 for x in range(num_of_features)])
             beta = 0
-            for v, (x, t) in enumerate(
-                    training_set[ba * len(training_set) / batches:(ba + 1) * len(training_set) / batches]):
+            for v, (x, t) in enumerate(training_set[ba * len(training_set) / batches:(ba + 1) * len(training_set) / batches]):
                 z = np.dot(weights, x) + b
                 output = perceptron_activation(z)
                 alfa += (t - output) * x * miu
@@ -76,7 +78,7 @@ def perceptron_mini_batch_training(training_set, num_of_features):
 
 def adeline_perceptron(training_set, num_of_features):
     weights = np.array([0.0 for x in range(num_of_features)])
-    nr_iterations = 1000000
+    nr_iterations = MAX_ITERATIONS
     b = 0
     miu = 0.01
 
