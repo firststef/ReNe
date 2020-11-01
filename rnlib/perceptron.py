@@ -1,7 +1,7 @@
 import numpy as np
 
 
-MAX_ITERATIONS = 30
+MAX_ITERATIONS = 10
 
 
 def perceptron_activation(ii: int):
@@ -80,18 +80,16 @@ def adeline_perceptron(training_set, num_of_features):
     weights = np.array([0.0 for x in range(num_of_features)])
     nr_iterations = MAX_ITERATIONS
     b = 0
-    miu = 0.01
+    miu = 0.001
 
     while nr_iterations > 0:
-        for i, (x, t) in enumerate(training_set):
+        for x, t in training_set:
             z = np.dot(weights, x) + b
             weights += (float(t) - z) * x * miu
-            b += (t - z) * miu
+            b += (float(t) - z) * miu
         nr_iterations -= 1
     return weights, b
 
 
 def compute_result_for_perceptron(weights, b, input_f):
-    z = np.dot(weights, input_f) + b
-    print(z)
-    return perceptron_activation(z)
+    return np.dot(weights, input_f) + b
