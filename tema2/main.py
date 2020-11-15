@@ -8,7 +8,7 @@ import unittest
 
 class TestPerceptrons(unittest.TestCase):
     def test_over_standard(self):
-        with gzip.open('mnist.pkl.gz', 'rb') as f:
+        with gzip.open('../files/mnist.pkl.gz', 'rb') as f:
             train_set, valid_set, test_set = pickle.load(f, encoding='latin')
 
             net = pn.SingleLayerNet([x for x in range(10)])
@@ -23,7 +23,7 @@ class TestPerceptrons(unittest.TestCase):
         """
         Tests that training perceptrons in serial and in parallel provides the same result
         """
-        with gzip.open('mnist.pkl.gz', 'rb') as f:
+        with gzip.open('../files/mnist.pkl.gz', 'rb') as f:
             train_set, valid_set, test_set = pickle.load(f, encoding='latin')
 
             net = pn.SingleLayerNet([x for x in range(10)])
@@ -53,4 +53,13 @@ class TestPerceptrons(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    with gzip.open('../files/mnist.pkl.gz', 'rb') as f:
+        train_set, valid_set, test_set = pickle.load(f, encoding='latin')
+
+        net = pn.SingleLayerNet([x for x in range(10)])
+        # net.train(train_set[0], train_set[1], batches=10) this is actually worse
+        net.train(train_set[0], train_set[1], batches=10)
+        ac1 = net.test_accuracy(valid_set[0], valid_set[1])
+        ac2 = net.test_accuracy(test_set[0], test_set[1])
+        print(ac1, ac2 )
+    # unittest.main()
