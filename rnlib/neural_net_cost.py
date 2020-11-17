@@ -9,7 +9,7 @@ class MeanSquaredCost(object):  # Quadratic
 
     @staticmethod
     def error(y, t):
-        fake_sigmoid_prime = y(1 - y)  # normally you would use z to compute sigmoid(z)*(1 - sigmoid(z)) but y is sigmoid(z)
+        fake_sigmoid_prime = y * (1 - y)  # normally you would use z to compute sigmoid(z)*(1 - sigmoid(z)) but y is sigmoid(z)
         return fake_sigmoid_prime * (y - t)
 
 

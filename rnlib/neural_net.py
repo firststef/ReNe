@@ -83,7 +83,11 @@ class NeuralNet:
             delta_b[i + 1] = np.full(l2, 0, dtype=float)
 
         for it in range(iterations):
-            # shuffle inputs
+            seed = np.random.randint(0, 100000)
+            np.random.seed(seed)
+            np.random.shuffle(inputs)
+            np.random.seed(seed)
+            np.random.shuffle(values)
 
             for ba in range(batches):
                 print('batch ' + str(ba))
@@ -130,12 +134,11 @@ class NeuralNet:
             self.serialize()
 
     def train_optimized(self, train_data, learning_rate, batch_size, iterations, save=True, test_data=None):
-        # Inputs
-        inputs = train_data[0]
-        values = train_data[1]
-        num_of_tests = len(inputs)
+        name = 'neural_net' + str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_') + '.pickle'
 
         # Aliasing
+        self.deserialize('neural_net2020-11-17_09_55_59_645857.pickle')
+
         layers_num = self.layers_num
         layers_w = self.layers_w
         layers_b = self.layers_b
@@ -145,6 +148,11 @@ class NeuralNet:
         out_classes = self.out_classes
         layers_dimensions = self.layers_dimensions
         cost = self.cost
+
+        # Inputs
+        inputs = train_data[0]
+        values = train_data[1]
+        num_of_tests = len(inputs)
         batches = num_of_tests // batch_size
 
         if self.dont_update_weights:
@@ -162,7 +170,11 @@ class NeuralNet:
             delta_b[i + 1] = np.full(l2, 0, dtype=float)
 
         for it in range(iterations):
-            # shuffle inputs
+            seed = np.random.randint(0, 100000)
+            np.random.seed(seed)
+            np.random.shuffle(inputs)
+            np.random.seed(seed)
+            np.random.shuffle(values)
 
             for ba in range(batches):
                 print('batch ' + str(ba))
@@ -188,7 +200,7 @@ class NeuralNet:
 
                     # compute error for the last layer output
                     # note: this error could instead be evaluated for the entire network
-                    ts = [(1 if v == t else 0) for v in out_classes]
+                    ts = np.array([1 if v == t else 0 for v in out_classes], dtype=float)
                     err = cost.error(inp, ts)
 
                     # back propagation
@@ -197,7 +209,7 @@ class NeuralNet:
                         delta_b[l] -= np.multiply(learning_rate, errs)
                         for rp in range(layers_dimensions[l - 1]):
                             delta_w[l - 1][rp] -= np.multiply(errs, learning_rate * prev_ys[l - 1][rp])
-                        errs = [prev_ys[l - 1][i] * (1 - prev_ys[l - 1][i]) * (errs * layers_w[l - 1][i])[0] for i in range(layers_dimensions[l - 1])]
+                        errs = prev_ys[l - 1] * (1 - prev_ys[l - 1]) * np.dot(layers_w[l - 1], errs)
 
                 layers_b = [layers_b[vi] + delta_b[vi] for vi in range(layers_num)]
                 layers_w = [layers_w[vi] + delta_w[vi] for vi in range(layers_num)]
@@ -207,11 +219,11 @@ class NeuralNet:
             self.layers_w = layers_w
             self.layers_b = layers_b
 
+            if save:
+                self.serialize(name)
+
             if test_data:
                 print(self.test_accuracy(test_data))
-
-        if save:
-            self.serialize()
 
     def feed_forward(self, layer, inputs):
         if layer == self.layers_num - 1:
@@ -238,8 +250,10 @@ class NeuralNet:
 
         return delta_w, delta_b
 
-    def serialize(self):
-        with open('neural_net' + str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_') + '.pickle', 'wb') as f:
+    def serialize(self, name=None):
+        if name is None:
+            name = 'neural_net' + str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_') + '.pickle'
+        with open(name, 'wb') as f:
             pickle.dump({
                 'layers_b': self.layers_b,
                 'layers_w': self.layers_w,
