@@ -137,8 +137,6 @@ class NeuralNet:
         name = 'neural_net' + str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_') + '.pickle'
 
         # Aliasing
-        self.deserialize('neural_net2020-11-17_09_55_59_645857.pickle')
-
         layers_num = self.layers_num
         layers_w = self.layers_w
         layers_b = self.layers_b
