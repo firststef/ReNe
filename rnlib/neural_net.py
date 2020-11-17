@@ -176,4 +176,4 @@ class NeuralNet:
         num_valid = 0
         for di, t in zip(input_data, outputs):
             num_valid += (self.test_one(di) == t)
-        return num_valid / len(test_set)
+        return num_valid / len(input_data)
