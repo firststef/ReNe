@@ -7,7 +7,15 @@ from neural_net_cost import CrossEntropyCost
 
 
 class NeuralNet:
-    def __init__(self, layers_dimensions=None, out_classes=None, cost=CrossEntropyCost(), activation=sigmoid, dont_update_weights=False):
+    def __init__(
+            self,
+            layers_dimensions=None,
+            out_classes=None,
+            cost=CrossEntropyCost(),
+            activation=sigmoid,
+            dont_update_weights=False,
+            optimize_weights_init=False
+    ):
         if out_classes is None:
             out_classes = []
         if layers_dimensions is None:
@@ -18,23 +26,36 @@ class NeuralNet:
         self.layers_w = None
         self.layers_b = None
         self.prev_ys = None
-        self.dont_update_weights = dont_update_weights
         self.cost = cost
         self.activation = activation
+        self.dont_update_weights = dont_update_weights
+        self.optimize_weights_init = optimize_weights_init
         self.init()
 
     def init(self):
         self.layers_w = [np.array([0], dtype=float) for i in range(self.layers_num)]
         self.layers_b = [np.array([0], dtype=float) for i in range(self.layers_num)]
         self.prev_ys = [np.array([0], dtype=float) for i in range(self.layers_num)]
+
+        mean, std_dev = 0, 1 / self.layers_dimensions[0] ** 0.5
+
         for i, l in enumerate(self.layers_dimensions):
-            self.layers_w[i] = np.full(l, 0, dtype=float)  # de initializat cu distributia aia
+            if not self.optimize_weights_init:
+                self.layers_w[i] = np.full(l, 0, dtype=float)
+            else:
+                self.layers_w[i] = np.random.normal(mean, std_dev, l)
+
             self.prev_ys[i] = np.full(l, 0, dtype=float)
             if i == self.layers_num - 1:
                 break
+
             l2 = self.layers_dimensions[i + 1]
-            self.layers_w[i] = np.full((l, l2), 0, dtype=float)  # de initializat cu distributia aia
-            self.layers_b[i + 1] = np.full(l2, 0, dtype=float)  # de initializat cu distributia aia
+            if not self.optimize_weights_init:
+                self.layers_w[i] = np.full((l, l2), 0, dtype=float)
+                self.layers_b[i + 1] = np.full(l2, 0, dtype=float)
+            else:
+                self.layers_w[i] = np.random.normal(mean, std_dev, size=(l, l2))
+                self.layers_b[i + 1] = np.random.normal(mean, std_dev, size=l2)
 
     def train(self, train_data, learning_rate, batch_size, iterations, save=True, test_data=None):
         # Inputs
@@ -118,20 +139,12 @@ class NeuralNet:
         return [self.prev_ys[layer][i] * (1 - self.prev_ys[layer][i]) * (errors * self.layers_w[layer][i])[0] for i in range(self.layers_dimensions[layer])]
 
     def back_propagate(self, layer, errs, learning_rate):
-        # this should not be called with layer == 0
-
         delta_b = np.full_like(self.layers_b[layer], 0)
         delta_w = np.full_like(self.layers_w[layer - 1], 0)
         if not self.dont_update_weights:
             delta_b -= np.multiply(learning_rate, errs)
         for i in range(self.layers_dimensions[layer - 1]):
-
-            # a = learning_rate
-            # b = errs
-            # c = self.prev_ys[layer - 1][i]
-
             delta_w[i] -= np.multiply(errs, learning_rate * self.prev_ys[layer - 1][i])  # ma intreb daca pot sa scap de i si sa fac
-        # delta_w -= np.multiply(errs, learning_rate * self.prev_ys[layer - 1])
 
         return delta_w, delta_b
 
@@ -157,7 +170,9 @@ class NeuralNet:
             inp = self.feed_forward(l, inp)
         return self.out_classes[np.argmax(inp)]
 
-    def test_accuracy(self, input_data, outputs):
+    def test_accuracy(self, test_set):
+        input_data = test_set[0]
+        outputs = test_set[1]
         num_valid = 0
         for di, t in zip(input_data, outputs):
             num_valid += (self.test_one(di) == t)

@@ -16,18 +16,19 @@ class TestTheSmallestNet(unittest.TestCase):
             np.array([[8], [4]], dtype=float),
             np.array([], dtype=float)
         ]
-        nn.train([[[2, 6]], [0]], learning_rate=0.5, batch_size=1, iterations=1)
+        nn.train([[[2, 6]], [1]], learning_rate=0.5, batch_size=1, iterations=1)
         print(nn.layers_w)
 
 
 class TrainMnist(unittest.TestCase):
     @unittest.skip('')
     def test_train(self):
-        nn = NeuralNet([784, 100, 10], [i for i in range(10)])
+        nn = NeuralNet([784, 100, 10], [i for i in range(10)], optimize_weights_init=True)
         nn.train(train_set, learning_rate=0.01, batch_size=100, iterations=10)
 
+    @unittest.skip('')
     def test_acc_load(self):
-        nn = NeuralNet([784, 100, 10], [i for i in range(10)])
+        nn = NeuralNet([784, 100, 10], [i for i in range(10)], optimize_weights_init=True)
         nn.deserialize('neural_net2020-11-15_21_00_00_483879.pickle')
         print(nn.test_accuracy(test_set[0], test_set[1]))
 
