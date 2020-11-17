@@ -6,4 +6,4 @@ def sigmoid(z):
 
 
 def softmax(z):
-    pass
+    return np.exp(z) / sum(np.exp(z))

@@ -13,6 +13,7 @@ class NeuralNet:
             out_classes=None,
             cost=CrossEntropyCost(),
             activation=sigmoid,
+            last_activation=sigmoid,
             dont_update_weights=False,
             optimize_weights_init=False
     ):
@@ -28,6 +29,7 @@ class NeuralNet:
         self.prev_ys = None
         self.cost = cost
         self.activation = activation
+        self.last_activation = last_activation
         self.dont_update_weights = dont_update_weights
         self.optimize_weights_init = optimize_weights_init
         self.init()
@@ -84,13 +86,13 @@ class NeuralNet:
             # shuffle inputs
 
             for ba in range(batches):
+                print('batch ' + str(ba))
                 # mini-batch setup
                 for wl in delta_w:
                     wl.fill(0)
                 for wb in delta_b:
                     wb.fill(0)
 
-                # setup mean for batch
                 for i in range(batch_size):
                     x = inputs[ba * batch_size + i]
                     t = values[ba * batch_size + i]
@@ -100,8 +102,6 @@ class NeuralNet:
                     inp = x
                     for l in range(self.layers_num - 1):
                         inp = self.feed_forward(l, inp)
-                        if len(self.prev_ys[l + 1]) != len(inp):
-                            raise BaseException("Ai cam daton bara gigele")
                         self.prev_ys[l + 1] = inp
 
                     # compute error for the last layer output
@@ -123,6 +123,93 @@ class NeuralNet:
             self.layers_w = layers_w
             self.layers_b = layers_b
 
+            if test_data:
+                print(self.test_accuracy(test_data))
+
+        if save:
+            self.serialize()
+
+    def train_optimized(self, train_data, learning_rate, batch_size, iterations, save=True, test_data=None):
+        # Inputs
+        inputs = train_data[0]
+        values = train_data[1]
+        num_of_tests = len(inputs)
+
+        # Aliasing
+        layers_num = self.layers_num
+        layers_w = self.layers_w
+        layers_b = self.layers_b
+        prev_ys = self.prev_ys
+        activation = self.activation
+        last_activation = self.last_activation
+        out_classes = self.out_classes
+        layers_dimensions = self.layers_dimensions
+        cost = self.cost
+        batches = num_of_tests // batch_size
+
+        if self.dont_update_weights:
+            print('[ WARN ]: Dont update weights only works in train()')
+
+        # Init deltas
+        delta_w = [np.array([0], dtype=float) for i in range(self.layers_num)]
+        delta_b = [np.array([0], dtype=float) for i in range(self.layers_num)]
+        for i, l in enumerate(self.layers_dimensions):
+            delta_w[i] = np.full(l, 0, dtype=float)
+            if i == self.layers_num - 1:
+                break
+            l2 = self.layers_dimensions[i + 1]
+            delta_w[i] = np.full((l, l2), 0, dtype=float)
+            delta_b[i + 1] = np.full(l2, 0, dtype=float)
+
+        for it in range(iterations):
+            # shuffle inputs
+
+            for ba in range(batches):
+                print('batch ' + str(ba))
+                # mini-batch setup
+                for wl in delta_w:
+                    wl.fill(0)
+                for wb in delta_b:
+                    wb.fill(0)
+
+                for i in range(batch_size):
+                    x = inputs[ba * batch_size + i]
+                    t = values[ba * batch_size + i]
+
+                    # feed forward
+                    prev_ys[0] = np.array(x, dtype=float)
+                    inp = x
+                    for la in range(layers_num - 1):
+                        if la == layers_num - 1:
+                            inp = last_activation(np.dot(inp, layers_w[la]) + layers_b[la + 1])
+                        else:
+                            inp = activation(np.dot(inp, layers_w[la]) + layers_b[la + 1])
+                        prev_ys[la + 1] = inp
+
+                    # compute error for the last layer output
+                    # note: this error could instead be evaluated for the entire network
+                    ts = [(1 if v == t else 0) for v in out_classes]
+                    err = cost.error(inp, ts)
+
+                    # back propagation
+                    errs = np.array(err, dtype=float)
+                    for l in range(layers_num - 1, 0, -1):
+                        delta_b[l] -= np.multiply(learning_rate, errs)
+                        for rp in range(layers_dimensions[l - 1]):
+                            delta_w[l - 1][rp] -= np.multiply(errs, learning_rate * prev_ys[l - 1][rp])
+                        errs = [prev_ys[l - 1][i] * (1 - prev_ys[l - 1][i]) * (errs * layers_w[l - 1][i])[0] for i in range(layers_dimensions[l - 1])]
+
+                layers_b = [layers_b[vi] + delta_b[vi] for vi in range(layers_num)]
+                layers_w = [layers_w[vi] + delta_w[vi] for vi in range(layers_num)]
+
+                break
+
+            self.layers_w = layers_w
+            self.layers_b = layers_b
+
+            if test_data:
+                print(self.test_accuracy(test_data))
+
         if save:
             self.serialize()
 
@@ -131,7 +218,10 @@ class NeuralNet:
             return None
 
         z = np.dot(inputs, self.layers_w[layer]) + self.layers_b[layer + 1]
-        ys = self.activation(z)
+        if layer == self.layers_num - 1:
+            ys = self.last_activation(z)
+        else:
+            ys = self.activation(z)
 
         return ys
 
