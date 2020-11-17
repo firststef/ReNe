@@ -11,7 +11,7 @@ with gzip.open('../files/mnist.pkl.gz', 'rb') as f:
 
 class TestTheSmallestNet(unittest.TestCase):
     def test_our_net(self):
-        nn = NeuralNet([2, 2, 1], [0], last_activation=softmax, dont_update_weights=True)
+        nn = NeuralNet([2, 2, 1], [0], last_activation=softmax, dont_update_biases=True)
         nn.layers_w = [
             np.array([[-3, 6], [1, -2]], dtype=float),
             np.array([[8], [4]], dtype=float),

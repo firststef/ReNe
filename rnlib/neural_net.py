@@ -14,7 +14,7 @@ class NeuralNet:
             cost=CrossEntropyCost(),
             activation=sigmoid,
             last_activation=sigmoid,
-            dont_update_weights=False,
+            dont_update_biases=False,
             optimize_weights_init=False
     ):
         if out_classes is None:
@@ -30,7 +30,7 @@ class NeuralNet:
         self.cost = cost
         self.activation = activation
         self.last_activation = last_activation
-        self.dont_update_weights = dont_update_weights
+        self.dont_update_weights = dont_update_biases
         self.optimize_weights_init = optimize_weights_init
         self.init()
 
