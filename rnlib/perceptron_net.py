@@ -26,9 +26,7 @@ class SingleLayerNet:
             for x, t in t_set:
                 z_m = np.dot(perceptrons_w, x) + perceptrons_b
                 t_m = np.array([1 if t == cl else 0 for cl in self.out_classes])
-                # a_m = self.activation_arr(z_m)
                 perceptrons_w += np.array([ou * x * learning_rate for ou in np.array(t_m - z_m)])
-                # np.outer [10, 1] (t_m - z_m) * reshape x => [1, 700] * learning_rate
                 perceptrons_b += (t_m - z_m) * learning_rate
             nr_iterations -= 1
         self.perceptrons_w = perceptrons_w
@@ -66,8 +64,8 @@ class SingleLayerNet:
                     alfas += np.array([ou * x * learning_rate for ou in np.array(t_m - z_m)])
                     beta += (t_m - z_m) * learning_rate
 
-            perceptrons_w += alfas / ba_size
-            perceptrons_b += beta / ba_size
+                perceptrons_w += alfas / ba_size
+                perceptrons_b += beta / ba_size
             nr_iterations -= 1
         self.perceptrons_w = perceptrons_w
         self.perceptrons_b = perceptrons_b

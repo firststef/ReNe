@@ -30,7 +30,7 @@ class TrainMnist(unittest.TestCase):
     @unittest.skip('')
     def test_acc_load(self):
         nn = NeuralNet([784, 100, 10], [i for i in range(10)], optimize_weights_init=True)
-        nn.deserialize('neural_net2020-11-15_21_00_00_483879.pickle')
+        nn.deserialize('neural_net2020-11-17_12_00_36_096048.pickle')
         print(nn.test_accuracy(test_set))
 
 

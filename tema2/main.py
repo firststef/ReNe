@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
         net = pn.SingleLayerNet([x for x in range(10)])
         # net.train(train_set[0], train_set[1], batches=10) this is actually worse
-        net.train(train_set[0], train_set[1], batches=10)
+        net.train_no_batch(train_set[0], train_set[1])
         ac1 = net.test_accuracy(valid_set[0], valid_set[1])
         ac2 = net.test_accuracy(test_set[0], test_set[1])
         print(ac1, ac2 )

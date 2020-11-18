@@ -32,6 +32,7 @@ class NeuralNet:
         self.last_activation = last_activation
         self.dont_update_weights = dont_update_biases
         self.optimize_weights_init = optimize_weights_init
+        self.dropout_p = 0.2
         self.init()
 
     def init(self):
@@ -39,7 +40,9 @@ class NeuralNet:
         self.layers_b = [np.array([0], dtype=float) for i in range(self.layers_num)]
         self.prev_ys = [np.array([0], dtype=float) for i in range(self.layers_num)]
 
-        mean, std_dev = 0, 1 / self.layers_dimensions[0] ** 0.5
+        mean, std_dev = 0, 1
+        if self.layers_num:
+            mean, std_dev = 0, 1 / self.layers_dimensions[0] ** 0.5
 
         for i, l in enumerate(self.layers_dimensions):
             if not self.optimize_weights_init:
@@ -136,6 +139,8 @@ class NeuralNet:
     def train_optimized(self, train_data, learning_rate, batch_size, iterations, save=True, test_data=None):
         name = 'neural_net' + str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_') + '.pickle'
 
+        # self.deserialize('neural_net2020-11-17_09_55_59_645857.pickle')
+
         # Aliasing
         layers_num = self.layers_num
         layers_w = self.layers_w
@@ -146,6 +151,9 @@ class NeuralNet:
         out_classes = self.out_classes
         layers_dimensions = self.layers_dimensions
         cost = self.cost
+
+        eps = 0.00000001
+        gamma = 0.9
 
         # Inputs
         inputs = train_data[0]
@@ -175,25 +183,34 @@ class NeuralNet:
             np.random.shuffle(values)
 
             for ba in range(batches):
-                print('batch ' + str(ba))
+                # print('batch ' + str(ba))
                 # mini-batch setup
                 for wl in delta_w:
                     wl.fill(0)
                 for wb in delta_b:
                     wb.fill(0)
 
+                self.dropout_p = 0.2
+
                 for i in range(batch_size):
                     x = inputs[ba * batch_size + i]
                     t = values[ba * batch_size + i]
+
+                    # dropout = np.array([np.random.choice(2, 100, p=[self.dropout_p, 1 - self.dropout_p])]).transpose()
 
                     # feed forward
                     prev_ys[0] = np.array(x, dtype=float)
                     inp = x
                     for la in range(layers_num - 1):
                         if la == layers_num - 1:
-                            inp = last_activation(np.dot(inp, layers_w[la]) + layers_b[la + 1])
+                            z = np.dot(inp, layers_w[la]) + layers_b[la + 1]
+                            # z = np.array([dropout[di] * z[di] for di in range(len(z))], dtype=float) / (1 - self.dropout_p)
+                            inp = last_activation(z)
                         else:
-                            inp = activation(np.dot(inp, layers_w[la]) + layers_b[la + 1])
+                            z = np.dot(inp, layers_w[la]) + layers_b[la + 1]
+                            # for di in range(len(z)):
+                            #     z[di] *= dropout[di] / (1 - self.dropout_p)
+                            inp = activation(z)
                         prev_ys[la + 1] = inp
 
                     # compute error for the last layer output
@@ -204,13 +221,19 @@ class NeuralNet:
                     # back propagation
                     errs = np.array(err, dtype=float)
                     for l in range(layers_num - 1, 0, -1):
-                        delta_b[l] -= np.multiply(learning_rate, errs)
+                        # apply RMSProp
+                        # ln = learning_rate / np.sqrt(gamma * np.power(sum(errs), 2) + (1 - gamma) * np.power(sum(err), 2) + eps)
+                        ln = learning_rate
+
+                        delta_b[l] -= np.multiply(ln, errs)
                         for rp in range(layers_dimensions[l - 1]):
-                            delta_w[l - 1][rp] -= np.multiply(errs, learning_rate * prev_ys[l - 1][rp])
+                            delta_w[l - 1][rp] -= np.multiply(errs, ln * prev_ys[l - 1][rp])
                         errs = prev_ys[l - 1] * (1 - prev_ys[l - 1]) * np.dot(layers_w[l - 1], errs)
 
-                layers_b = [layers_b[vi] + delta_b[vi] for vi in range(layers_num)]
-                layers_w = [layers_w[vi] + delta_w[vi] for vi in range(layers_num)]
+
+                for vi in range(layers_num):
+                    layers_b[vi] += delta_b[vi]
+                    layers_w[vi] += delta_w[vi]
 
                 break
 
