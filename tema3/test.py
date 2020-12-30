@@ -24,13 +24,14 @@ class TestTheSmallestNet(unittest.TestCase):
 class TrainMnist(unittest.TestCase):
     @unittest.skip('')
     def test_train(self):
-        nn = NeuralNet([784, 100, 10], [i for i in range(10)], optimize_weights_init=True)
-        nn.train(train_set, learning_rate=0.01, batch_size=100, iterations=10)
+        nn = NeuralNet([784, 100, 10], [i for i in range(10)], last_activation=softmax, optimize_weights_init=False)
+        nn.train_optimized(train_set, learning_rate=0.01, batch_size=100, iterations=200, test_data=valid_set, save=True)
+        print(nn.test_accuracy(valid_set))
 
     @unittest.skip('')
     def test_acc_load(self):
         nn = NeuralNet([784, 100, 10], [i for i in range(10)], optimize_weights_init=True)
-        nn.deserialize('neural_net2020-11-17_12_00_36_096048.pickle')
+        nn.deserialize('neural_net2020-11-19_14_43_51_840922.pickle')
         print(nn.test_accuracy(test_set))
 
 

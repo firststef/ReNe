@@ -40,9 +40,7 @@ class NeuralNet:
         self.layers_b = [np.array([0], dtype=float) for i in range(self.layers_num)]
         self.prev_ys = [np.array([0], dtype=float) for i in range(self.layers_num)]
 
-        mean, std_dev = 0, 1
-        if self.layers_num:
-            mean, std_dev = 0, 1 / self.layers_dimensions[0] ** 0.5
+        mean, std_dev = 0, 1 / self.layers_dimensions[0] ** 0.5
 
         for i, l in enumerate(self.layers_dimensions):
             if not self.optimize_weights_init:
@@ -176,11 +174,11 @@ class NeuralNet:
             delta_b[i + 1] = np.full(l2, 0, dtype=float)
 
         for it in range(iterations):
-            seed = np.random.randint(0, 100000)
-            np.random.seed(seed)
-            np.random.shuffle(inputs)
-            np.random.seed(seed)
-            np.random.shuffle(values)
+            # seed = np.random.randint(0, 100000)
+            # np.random.seed(seed)
+            # np.random.shuffle(inputs)
+            # np.random.seed(seed)
+            # np.random.shuffle(values)
 
             for ba in range(batches):
                 # print('batch ' + str(ba))
@@ -228,14 +226,13 @@ class NeuralNet:
                         delta_b[l] -= np.multiply(ln, errs)
                         for rp in range(layers_dimensions[l - 1]):
                             delta_w[l - 1][rp] -= np.multiply(errs, ln * prev_ys[l - 1][rp])
+                            # a = np.multiply(errs, ln * prev_ys[l - 1][rp])
+                            # ln = learning_rate / np.sqrt(
+                            #     gamma * np.power(a, 2) + (1 - gamma) * np.power(a, 2) + eps)
                         errs = prev_ys[l - 1] * (1 - prev_ys[l - 1]) * np.dot(layers_w[l - 1], errs)
 
-
-                for vi in range(layers_num):
-                    layers_b[vi] += delta_b[vi]
-                    layers_w[vi] += delta_w[vi]
-
-                break
+                layers_b = [layers_b[vi] + delta_b[vi] for vi in range(layers_num)]
+                layers_w = [layers_w[vi] + delta_w[vi] for vi in range(layers_num)]
 
             self.layers_w = layers_w
             self.layers_b = layers_b
