@@ -91,7 +91,6 @@ class NeuralNet:
             np.random.shuffle(values)
 
             for ba in range(batches):
-                print('batch ' + str(ba))
                 # mini-batch setup
                 for wl in delta_w:
                     wl.fill(0)
@@ -105,9 +104,11 @@ class NeuralNet:
                     # feed forward
                     self.prev_ys[0] = np.array(x, dtype=float)
                     inp = x
-                    for l in range(self.layers_num - 1):
-                        inp = self.feed_forward(l, inp)
-                        self.prev_ys[l + 1] = inp
+                    print("FORWARD")
+                    for ll in range(self.layers_num - 1):
+                        print('strat ' + str(ll+1) + ':')
+                        inp = self.feed_forward(ll, inp)
+                        self.prev_ys[ll + 1] = inp
 
                     # compute error for the last layer output
                     # note: this error could instead be evaluated for the entire network
@@ -115,8 +116,10 @@ class NeuralNet:
                     err = self.cost.error(inp, ts)
 
                     # back propagation
+                    print("BACKPROPAGATION")
                     errs = np.array(err, dtype=float)
                     for l in range(self.layers_num - 1, 0, -1):
+                        print("eroare δ stratul " + str(l) + ":", errs)
                         delta_batch_w, delta_batch_b = self.back_propagate(l, errs, learning_rate)
                         delta_w[l - 1] += delta_batch_w
                         delta_b[l] += delta_batch_b
@@ -125,6 +128,7 @@ class NeuralNet:
                 layers_b = [layers_b[vi] + delta_b[vi] for vi in range(layers_num)]
                 layers_w = [layers_w[vi] + delta_w[vi] for vi in range(layers_num)]
 
+            print("END")
             self.layers_w = layers_w
             self.layers_b = layers_b
 
@@ -248,10 +252,9 @@ class NeuralNet:
             return None
 
         z = np.dot(inputs, self.layers_w[layer]) + self.layers_b[layer + 1]
-        if layer == self.layers_num - 1:
-            ys = self.last_activation(z)
-        else:
-            ys = self.activation(z)
+        print("z-uri:", z)
+        ys = self.activation(z)
+        print("y-uri:", ys)
 
         return ys
 
@@ -264,8 +267,8 @@ class NeuralNet:
         if not self.dont_update_weights:
             delta_b -= np.multiply(learning_rate, errs)
         for i in range(self.layers_dimensions[layer - 1]):
-            delta_w[i] -= np.multiply(errs, learning_rate * self.prev_ys[layer - 1][i])  # ma intreb daca pot sa scap de i si sa fac
-
+            print("derivata δC/δw:", np.multiply(errs, self.prev_ys[layer - 1][i]))
+            delta_w[i] -= np.multiply(errs, learning_rate * self.prev_ys[layer - 1][i])
         return delta_w, delta_b
 
     def serialize(self, name=None):
