@@ -119,7 +119,8 @@ class NeuralNet:
                     print("BACKPROPAGATION")
                     errs = np.array(err, dtype=float)
                     for l in range(self.layers_num - 1, 0, -1):
-                        print("eroare δ stratul " + str(l) + ":", errs)
+                        # print("eroare δ stratul " + str(l+1) + ":", errs)
+                        [print("δ({}){}: ".format(l+1, i+1) + str(_err)) for i, _err in enumerate(errs)]
                         delta_batch_w, delta_batch_b = self.back_propagate(l, errs, learning_rate)
                         delta_w[l - 1] += delta_batch_w
                         delta_b[l] += delta_batch_b
@@ -267,7 +268,7 @@ class NeuralNet:
         if not self.dont_update_weights:
             delta_b -= np.multiply(learning_rate, errs)
         for i in range(self.layers_dimensions[layer - 1]):
-            print("derivata δC/δw:", np.multiply(errs, self.prev_ys[layer - 1][i]))
+            [print("derivata δC/δw({}){}{}: {}".format(layer+1, i+1, j+1, str(_dc))) for j, _dc in enumerate(np.multiply(errs, self.prev_ys[layer - 1][i]))]
             delta_w[i] -= np.multiply(errs, learning_rate * self.prev_ys[layer - 1][i])
         return delta_w, delta_b
 

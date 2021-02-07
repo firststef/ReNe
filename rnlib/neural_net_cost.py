@@ -26,3 +26,15 @@ class CrossEntropyCost(object):
     @staticmethod
     def error(y, t):
         return y - t
+
+
+class CrossEntropyForBinary(object):
+    def __init__(self, expected_out):
+        self.expected_out = expected_out
+
+    @staticmethod
+    def value(y, t):
+        return np.sum(np.nan_to_num(-t*np.log(y)-(1-t)*np.log(1-y)))
+
+    def error(self, y, t):
+        return y - self.expected_out

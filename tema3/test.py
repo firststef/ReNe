@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 from neural_net import NeuralNet
 from neural_net_activations import softmax
+from neural_net_cost import CrossEntropyForBinary
 
 with gzip.open('../files/mnist.pkl.gz', 'rb') as f:
     train_set, valid_set, test_set = pickle.load(f, encoding='latin')
@@ -13,14 +14,35 @@ class TestTheSmallestNet(unittest.TestCase):
     def test_our_net(self):
         np.set_printoptions(precision=3)
         np.set_printoptions(suppress=True)
-        nn = NeuralNet([2, 3, 1], [0], last_activation=softmax, dont_update_biases=True)
+
+        # nn = NeuralNet([2, 3, 1], [0], last_activation=softmax, dont_update_biases=True)
+        # nn.layers_w = [
+        #     np.array([[0, -2, -4], [4, 1, 2]], dtype=float),
+        #     np.array([[2], [4], [6]], dtype=float),
+        #     np.array([], dtype=float)
+        # ]
+        # nn.train([[[1, 2]], [1]], learning_rate=0.5, batch_size=1, iterations=1)
+        # print(nn.layers_w)
+
+        cost = CrossEntropyForBinary([0])
+        nn = NeuralNet([2, 3, 1], [0], cost=cost, dont_update_biases=True)
         nn.layers_w = [
             np.array([[0, -2, -4], [4, 1, 2]], dtype=float),
             np.array([[2], [4], [6]], dtype=float),
             np.array([], dtype=float)
         ]
-        nn.train([[[1, 2]], [1]], learning_rate=0.5, batch_size=1, iterations=1)
+        nn.train([[[1, 2]], [0]], learning_rate=0.5, batch_size=1, iterations=1)
         print(nn.layers_w)
+
+        # cost = CrossEntropyForBinary([0, 1])
+        # nn = NeuralNet([2, 2, 2], [0, 1], cost=cost, dont_update_biases=True)
+        # nn.layers_w = [
+        #     np.array([[-2, 1], [4, 2]], dtype=float),
+        #     np.array([[1, 0], [-1, 6]], dtype=float),
+        #     np.array([0, 0], dtype=float)
+        # ]
+        # nn.train([[[1, 2]], [0, 1]], learning_rate=0.5, batch_size=1, iterations=1)
+        # print(nn.layers_w)
 
 
 class TrainMnist(unittest.TestCase):
